@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 
 import { llamarAutenticado } from '@/lib/auth';
+import { formatearMoneda } from '@/lib/format';
+import type { ActualizacionDeposito } from '@/lib/types';
 import { aporteSchema, MENSAJE_POR_CODIGO, retiroSchema } from '@/lib/validation';
 
 import type { EstadoFormulario } from './auth';
@@ -59,5 +61,25 @@ export async function crearRetiroAction(_previo: EstadoFormulario, formData: For
     mensaje: r.repetido
       ? 'Tu solicitud de retiro ya estaba registrada.'
       : 'Retiro solicitado. El monto quedó retenido hasta que tesorería lo apruebe y lo pague.',
+  };
+}
+
+/**
+ * "Ya deposité": pide a Odoo que lea de inmediato los movimientos del banco para que un depósito recién hecho
+ * desde la billetera aparezca en el saldo sin esperar a la sincronización automática.
+ */
+export async function actualizarDepositosAction(_previo: EstadoFormulario, _formData: FormData): Promise<EstadoFormulario> {
+  const r = await llamarAutenticado<ActualizacionDeposito>('deposito/actualizar', {});
+  if (!r.success) return { error: mensajeDeError(r.code, r.error) };
+
+  revalidatePath('/');
+  revalidatePath('/cuenta');
+  revalidatePath('/cuenta/depositar');
+  return {
+    ok: true,
+    mensaje:
+      r.acreditado > 0
+        ? `Se acreditaron ${formatearMoneda(r.acreditado, r.moneda)}. Tu saldo disponible es ${formatearMoneda(r.saldo, r.moneda)}.`
+        : 'Todavía no vemos tu depósito. Puede tardar unos segundos: vuelve a intentarlo en un momento.',
   };
 }

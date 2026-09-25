@@ -155,3 +155,14 @@ export interface RetiroResumen {
   moneda: string;
   estado: string;
 }
+
+/** Datos para depositar desde la app de billetera (`deposito/info`). */
+export type DepositoInfo =
+  | { activo: false }
+  | { activo: true; plataforma: string; app_url: string; billetera_vinculada: string | null; moneda: string };
+
+export interface ActualizacionDeposito {
+  acreditado: number;
+  saldo: number;
+  moneda: string;
+}

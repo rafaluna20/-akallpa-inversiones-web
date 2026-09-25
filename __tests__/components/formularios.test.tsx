@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { usePathname } from 'next/navigation';
 
-import { AporteForm, LoginForm, RetiroForm } from '@/components/cuenta/Formularios';
+import { ActualizarDepositosForm, AporteForm, LoginForm, RetiroForm } from '@/components/cuenta/Formularios';
 import { BarraInferior, BarraLateral } from '@/components/layout/Navegacion';
 import { estaActiva } from '@/components/layout/nav';
 
@@ -13,7 +13,11 @@ jest.mock('react-dom', () => ({
   useFormStatus: () => ({ pending: false }),
 }));
 jest.mock('@/app/actions/auth', () => ({ loginAction: jest.fn() }));
-jest.mock('@/app/actions/operaciones', () => ({ crearAporteAction: jest.fn(), crearRetiroAction: jest.fn() }));
+jest.mock('@/app/actions/operaciones', () => ({
+  crearAporteAction: jest.fn(),
+  crearRetiroAction: jest.fn(),
+  actualizarDepositosAction: jest.fn(),
+}));
 jest.mock('next/navigation', () => ({ usePathname: jest.fn() }));
 jest.mock('next/link', () => ({
   __esModule: true,
@@ -104,6 +108,24 @@ describe('RetiroForm', () => {
     const nombres = Array.from(container.querySelectorAll('input')).map((i) => i.getAttribute('name'));
     expect(nombres.sort()).toEqual(['llave', 'monto']);
     await waitFor(() => expect((container.querySelector('input[name="llave"]') as HTMLInputElement).value).toMatch(FORMATO_LLAVE));
+  });
+});
+
+describe('ActualizarDepositosForm', () => {
+  test('ofrece el botón "Ya deposité" y muestra el resultado devuelto por la acción', () => {
+    render(<ActualizarDepositosForm />);
+    expect(screen.getByRole('button', { name: /Ya deposité/ })).toBeEnabled();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  test('muestra el éxito y el error del servidor', () => {
+    estadoSimulado = { ok: true, mensaje: 'Se acreditaron S/ 500.00.' };
+    const { unmount } = render(<ActualizarDepositosForm />);
+    expect(screen.getByRole('status')).toHaveTextContent('Se acreditaron');
+    unmount();
+    estadoSimulado = { error: 'El servicio no está disponible.' };
+    render(<ActualizarDepositosForm />);
+    expect(screen.getByRole('alert')).toHaveTextContent('no está disponible');
   });
 });
 

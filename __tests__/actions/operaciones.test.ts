@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { crearAporteAction, crearRetiroAction } from '@/app/actions/operaciones';
+import { actualizarDepositosAction, crearAporteAction, crearRetiroAction } from '@/app/actions/operaciones';
 import { llamarAutenticado } from '@/lib/auth';
 
 jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }));
@@ -76,5 +76,32 @@ describe('crearRetiroAction', () => {
     const r = await crearRetiroAction({}, formulario({ monto: '0', llave: LLAVE }));
     expect(r.error).toBeTruthy();
     expect(llamarMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('actualizarDepositosAction', () => {
+  test('pide a Odoo actualizar los depósitos y avisa cuánto se acreditó', async () => {
+    llamarMock.mockResolvedValue({ success: true, acreditado: 500, saldo: 1500, moneda: 'PEN' } as never);
+    const r = await actualizarDepositosAction({}, new FormData());
+    expect(llamarMock).toHaveBeenCalledWith('deposito/actualizar', {});
+    expect(r.ok).toBe(true);
+    expect(r.mensaje).toMatch(/acreditaron/);
+    expect(r.mensaje).toMatch(/500/);
+  });
+
+  test('si todavía no llegó el depósito, lo dice sin marcarlo como error', async () => {
+    llamarMock.mockResolvedValue({ success: true, acreditado: 0, saldo: 1000, moneda: 'PEN' } as never);
+    const r = await actualizarDepositosAction({}, new FormData());
+    expect(r.ok).toBe(true);
+    expect(r.mensaje).toMatch(/Todavía no vemos/);
+  });
+
+  test('los errores del banco se traducen y no filtran detalles', async () => {
+    llamarMock.mockResolvedValueOnce({ success: false, error: 'detalle interno', code: 'servicio' });
+    const a = await actualizarDepositosAction({}, new FormData());
+    expect(a.ok).toBeUndefined();
+    expect(a.error).not.toContain('detalle interno');
+    llamarMock.mockResolvedValueOnce({ success: false, error: 'x', code: 'limite' });
+    expect((await actualizarDepositosAction({}, new FormData())).error).toMatch(/Demasiados intentos/);
   });
 });

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { MovimientosLista } from '@/components/cuenta/MovimientosLista';
 import { RetiroForm } from '@/components/cuenta/Formularios';
@@ -32,6 +33,12 @@ export default async function CuentaPage() {
     <div className="space-y-8">
       <PageTitle titulo="Mi cuenta" subtitulo="Tu saldo, tus aportes por proyecto y tus movimientos." />
       {error && !error.success && <Alert tipo="error">{mensajeDeError(error)}</Alert>}
+
+      <p>
+        <Link href="/cuenta/depositar" className="inline-flex rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">
+          Depositar desde mi billetera
+        </Link>
+      </p>
 
       <section aria-label="Saldos" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {me.cuentas.length === 0 ? (

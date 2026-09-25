@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useFormState } from 'react-dom';
 
 import { loginAction, type EstadoFormulario } from '@/app/actions/auth';
-import { crearAporteAction, crearRetiroAction } from '@/app/actions/operaciones';
+import { actualizarDepositosAction, crearAporteAction, crearRetiroAction } from '@/app/actions/operaciones';
 import { Alert } from '@/components/ui/primitives';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { formatearMoneda } from '@/lib/format';
@@ -101,6 +101,18 @@ export function RetiroForm({ moneda, saldoDisponible, tieneCuentaDestino }: Reti
       {estado.error && <Alert tipo="error">{estado.error}</Alert>}
       {estado.ok && estado.mensaje && <Alert tipo="exito">{estado.mensaje}</Alert>}
       <SubmitButton className={llave ? '' : 'pointer-events-none opacity-60'}>Solicitar retiro</SubmitButton>
+    </form>
+  );
+}
+
+/** Botón "Ya deposité": trae ya los movimientos del banco. */
+export function ActualizarDepositosForm() {
+  const [estado, accion] = useFormState(actualizarDepositosAction, ESTADO_INICIAL);
+  return (
+    <form action={accion} className="space-y-4">
+      {estado.error && <Alert tipo="error">{estado.error}</Alert>}
+      {estado.ok && estado.mensaje && <Alert tipo="exito">{estado.mensaje}</Alert>}
+      <SubmitButton>Ya deposité, actualizar mi saldo</SubmitButton>
     </form>
   );
 }
