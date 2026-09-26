@@ -179,3 +179,48 @@ export interface ActualizacionDeposito {
   saldo: number;
   moneda: string;
 }
+
+/** Semáforo de un índice EVM (CPI o SPI): >= 1.0 es sano. */
+export interface IndiceEvm {
+  valor: number;
+  ok: boolean;
+  texto: string;
+}
+
+/** Métricas EVM de un informe. `sin_datos` = todavía no hay valorizaciones aprobadas: no se muestran índices. */
+export interface Evm {
+  bac: number;
+  pv: number;
+  ev: number;
+  ac: number;
+  sin_datos: boolean;
+  cpi: IndiceEvm | null;
+  spi: IndiceEvm | null;
+}
+
+export interface InformeResumen {
+  id: number;
+  nombre: string;
+  fecha: string | null;
+  estado: string | null;
+  estado_texto: string;
+  avance: number;
+  cpi: IndiceEvm | null;
+  spi: IndiceEvm | null;
+}
+
+export interface InformeObra extends InformeResumen {
+  descripcion: string;
+  tareas: { total: number; cerradas: number; porcentaje: number };
+  evm: Evm | null;
+}
+
+/** Tablero de obra (`proyecto/tablero`). Los montos solo llegan si el inversionista participa. */
+export interface Tablero {
+  participa: boolean;
+  moneda: string;
+  ultimo: InformeObra | null;
+  historial: InformeResumen[];
+  resultado: { ventas: number; costos: number; margen: number } | null;
+  mayores_gastos: { fecha: string; descripcion: string; monto: number }[];
+}

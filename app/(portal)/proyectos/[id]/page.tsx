@@ -8,12 +8,13 @@ import { BarraDatos } from '@/components/proyectos/BarraDatos';
 import { CierresLista } from '@/components/proyectos/CierreComponentes';
 import { PanelInversion } from '@/components/proyectos/PanelInversion';
 import { insigniaDeEstado } from '@/components/proyectos/ProyectoCard';
+import { TableroObra } from '@/components/proyectos/TableroObra';
 import { TabsProyecto } from '@/components/proyectos/TabsProyecto';
 import { Alert, EmptyState } from '@/components/ui/primitives';
 import { llamarAutenticado } from '@/lib/auth';
 import { mensajeDeError } from '@/lib/errores';
 import { ETIQUETA_ESTADO_PROYECTO, ETIQUETA_TIPO_PROYECTO, formatearFecha, formatearMonto, formatearPorcentaje } from '@/lib/format';
-import type { ProyectoDetalle } from '@/lib/types';
+import type { ProyectoDetalle, Tablero } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Proyecto' };
 
@@ -28,7 +29,10 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
 
 export default async function ProyectoPage({ params }: { params: { id: string } }) {
   if (!/^\d+$/.test(params.id)) notFound();
-  const r = await llamarAutenticado<{ proyecto: ProyectoDetalle }>('proyecto', { id: Number(params.id) });
+  const [r, tab] = await Promise.all([
+    llamarAutenticado<{ proyecto: ProyectoDetalle }>('proyecto', { id: Number(params.id) }),
+    llamarAutenticado<Tablero>('proyecto/tablero', { id: Number(params.id) }),
+  ]);
   if (!r.success) {
     if (r.code === 'no_encontrado') notFound();
     return <Alert tipo="error">{mensajeDeError(r)}</Alert>;
@@ -38,6 +42,11 @@ export default async function ProyectoPage({ params }: { params: { id: string } 
   const insignia = insigniaDeEstado(p);
 
   const pestanas = [
+    {
+      id: 'tablero',
+      etiqueta: 'Tablero de obra',
+      contenido: tab.success ? <TableroObra tablero={tab} /> : <Alert tipo="error">{mensajeDeError(tab)}</Alert>,
+    },
     {
       id: 'descripcion',
       etiqueta: 'Descripción',
