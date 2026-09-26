@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FaArrowLeft, FaBuilding } from 'react-icons/fa';
 
+import { UbicacionProyecto } from '@/components/mapa/UbicacionProyecto';
 import { AvanceTimeline } from '@/components/proyectos/AvanceTimeline';
 import { BarraDatos } from '@/components/proyectos/BarraDatos';
 import { CierresLista } from '@/components/proyectos/CierreComponentes';
@@ -55,6 +56,11 @@ export default async function ProyectoPage({ params }: { params: { id: string } 
       ) : (
         <EmptyState titulo="Akallpa aún no publicó la descripción" descripcion="Cuando esté disponible la verás aquí." />
       ),
+    },
+    {
+      id: 'ubicacion',
+      etiqueta: 'Ubicación',
+      contenido: <UbicacionProyecto proyecto={p} />,
     },
     {
       id: 'avance',
