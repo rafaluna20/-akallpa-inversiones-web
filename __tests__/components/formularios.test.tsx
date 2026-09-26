@@ -1,9 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { usePathname } from 'next/navigation';
 
 import { ActualizarDepositosForm, AporteForm, LoginForm, RetiroForm } from '@/components/cuenta/Formularios';
-import { BarraInferior, BarraLateral } from '@/components/layout/Navegacion';
-import { estaActiva } from '@/components/layout/nav';
 
 // React 18 estable no incluye useFormState/useFormStatus: Next las provee en tiempo de ejecución. Aquí se simulan.
 let estadoSimulado: { ok?: boolean; error?: string; mensaje?: string } = {};
@@ -18,7 +15,6 @@ jest.mock('@/app/actions/operaciones', () => ({
   crearRetiroAction: jest.fn(),
   actualizarDepositosAction: jest.fn(),
 }));
-jest.mock('next/navigation', () => ({ usePathname: jest.fn() }));
 jest.mock('next/link', () => ({
   __esModule: true,
   default: ({ href, children, prefetch: _prefetch, ...resto }: { href: string; children: React.ReactNode; prefetch?: boolean }) => (
@@ -126,29 +122,5 @@ describe('ActualizarDepositosForm', () => {
     estadoSimulado = { error: 'El servicio no está disponible.' };
     render(<ActualizarDepositosForm />);
     expect(screen.getByRole('alert')).toHaveTextContent('no está disponible');
-  });
-});
-
-describe('navegación', () => {
-  test('estaActiva: la raíz solo coincide exacta; las demás también por prefijo', () => {
-    expect(estaActiva('/', '/')).toBe(true);
-    expect(estaActiva('/proyectos', '/')).toBe(false);
-    expect(estaActiva('/proyectos/5/cierres/2', '/proyectos')).toBe(true);
-    expect(estaActiva('/proyectos-extra', '/proyectos')).toBe(false);
-    expect(estaActiva('/cuenta', '/proyectos')).toBe(false);
-  });
-
-  test('marca la sección activa con aria-current en ambas barras', () => {
-    (usePathname as jest.Mock).mockReturnValue('/proyectos/5');
-    render(
-      <>
-        <BarraLateral />
-        <BarraInferior />
-      </>
-    );
-    const activos = screen.getAllByRole('link', { current: 'page' });
-    expect(activos).toHaveLength(2);
-    activos.forEach((a) => expect(a).toHaveAttribute('href', '/proyectos'));
-    expect(screen.getAllByRole('link', { name: /Panel/ })[0]).not.toHaveAttribute('aria-current');
   });
 });

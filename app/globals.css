@@ -6,12 +6,52 @@
   color-scheme: dark;
 }
 
-html {
-  scroll-behavior: smooth;
+/* Base tipográfica heredada de Inversiones Pro: 1rem = 10px y cuerpo de 1.6rem, PT Sans + Roboto Slab. */
+@layer base {
+  html {
+    @apply scroll-smooth;
+    font-size: 62.5%;
+  }
+
+  body {
+    @apply text-gray-100 antialiased;
+    background-color: #020617;
+    font-family: var(--font-pt-sans), sans-serif;
+    font-size: 1.6rem;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2 {
+    font-family: var(--font-roboto-slab), serif;
+  }
+
+  h1 {
+    @apply text-4xl font-bold;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold;
+  }
+
+  h4 {
+    @apply text-xl font-medium;
+  }
 }
 
-body {
-  min-height: 100vh;
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Respeta a quienes piden menos movimiento */

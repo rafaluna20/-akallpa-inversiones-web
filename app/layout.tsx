@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter, Roboto_Slab } from 'next/font/google';
+import { PT_Sans, Roboto_Slab } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
-const slab = Roboto_Slab({ subsets: ['latin'], variable: '--font-slab', display: 'swap' });
+// Las mismas tipografías de Inversiones Pro.
+const ptSans = PT_Sans({ weight: ['400', '700'], subsets: ['latin'], variable: '--font-pt-sans', display: 'swap' });
+const robotoSlab = Roboto_Slab({ subsets: ['latin'], variable: '--font-roboto-slab', display: 'swap' });
 
 export const metadata: Metadata = {
   title: { default: 'Akallpa Inversiones', template: '%s · Akallpa Inversiones' },
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es" className={`${inter.variable} ${slab.variable}`}>
+    <html lang="es" className={`${ptSans.variable} ${robotoSlab.variable}`}>
       <body className="bg-slate-950 font-sans text-gray-100 antialiased">{children}</body>
     </html>
   );

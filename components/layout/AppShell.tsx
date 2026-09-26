@@ -1,71 +1,41 @@
-import { LogOut } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { logoutAction } from '@/app/actions/auth';
-import { formatearMoneda } from '@/lib/format';
-import type { Cuenta } from '@/lib/types';
-
-import { BarraInferior, BarraLateral } from './Navegacion';
+import { BottomNav } from './BottomNav';
+import { Sidebar } from './Sidebar';
+import { SidebarProvider } from './SidebarContext';
+import { TopBar } from './TopBar';
 
 interface Props {
   nombre: string;
-  cuentas: Cuenta[];
+  email: string;
+  saldo: number;
+  enProyectos: number;
+  moneda: string;
+  kyc: 'pendiente' | 'verificado' | 'rechazado';
+  misProyectos: number;
+  oportunidades: number;
   children: ReactNode;
 }
 
-function BotonSalir() {
+/**
+ * Estructura del portal, igual a la de Inversiones Pro: barra superior fija, barra lateral pegajosa a su
+ * izquierda y el contenido; en móvil, barra inferior.
+ */
+export function AppShell({ children, ...datos }: Props) {
   return (
-    <form action={logoutAction}>
-      <button
-        type="submit"
-        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-      >
-        <LogOut className="h-4 w-4" aria-hidden />
-        Cerrar sesión
-      </button>
-    </form>
-  );
-}
-
-/** Estructura del portal: barra lateral en escritorio, cabecera + barra inferior en móvil. */
-export function AppShell({ nombre, cuentas, children }: Props) {
-  const saldo = cuentas[0];
-  return (
-    <div className="min-h-screen bg-slate-950 text-gray-100">
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 bg-slate-900/90 px-4 py-3 backdrop-blur-xl lg:hidden">
-        <span className="font-display text-lg font-bold text-white">Akallpa</span>
-        <span className="text-sm text-slate-300">{nombre}</span>
-      </header>
-
-      <div className="mx-auto flex max-w-7xl">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col justify-between border-r border-white/10 p-5 lg:flex">
-          <div>
-            <p className="mb-8 font-display text-2xl font-bold text-white">
-              Akallpa <span className="text-blue-400">Inversiones</span>
-            </p>
-            <BarraLateral />
-          </div>
-          <div className="space-y-3">
-            {saldo && (
-              <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Saldo disponible</p>
-                <p className="mt-1 font-mono text-xl font-bold text-white">{formatearMoneda(saldo.saldo, saldo.moneda)}</p>
-              </div>
-            )}
-            <p className="truncate px-1 text-sm text-slate-300">{nombre}</p>
-            <BotonSalir />
-          </div>
-        </aside>
-
-        <main className="min-w-0 flex-1 px-4 pb-28 pt-6 lg:px-10 lg:pb-10 lg:pt-10">
-          {children}
-          <div className="mt-10 border-t border-white/5 pt-4 lg:hidden">
-            <BotonSalir />
-          </div>
-        </main>
+    <SidebarProvider>
+      <div className="flex min-h-screen flex-col bg-slate-950 text-gray-100 lg:gap-6">
+        <TopBar nombre={datos.nombre} email={datos.email} saldo={datos.saldo} moneda={datos.moneda} />
+        <div className="h-0.5" />
+        <div className="flex flex-1 pt-[calc(5rem+2px)]">
+          <Sidebar {...datos} />
+          <div className="hidden w-[5px] shrink-0 lg:block" />
+          <main className="flex min-w-0 flex-1 flex-col">
+            <div className="flex-1 overflow-x-hidden p-4 pb-28 lg:p-8">{children}</div>
+          </main>
+        </div>
+        <BottomNav />
       </div>
-
-      <BarraInferior />
-    </div>
+    </SidebarProvider>
   );
 }

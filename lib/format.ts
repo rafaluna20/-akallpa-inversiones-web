@@ -47,3 +47,31 @@ export const ETIQUETA_TIPO_MOVIMIENTO: Record<string, string> = {
   reversion: 'Reversión',
   ajuste: 'Ajuste',
 };
+
+export const ETIQUETA_TIPO_PROYECTO: Record<string, string> = {
+  casa: 'Casa',
+  departamento: 'Departamento',
+  multifamiliar: 'Multifamiliar',
+  unifamiliar: 'Unifamiliar',
+  local: 'Local comercial',
+  terreno: 'Terreno',
+  oficina: 'Oficina',
+};
+
+/** Plural para los filtros por categoría. */
+export const ETIQUETA_TIPO_PLURAL: Record<string, string> = {
+  casa: 'Casas',
+  departamento: 'Departamentos',
+  multifamiliar: 'Multifamiliares',
+  unifamiliar: 'Unifamiliares',
+  local: 'Locales',
+  terreno: 'Terrenos',
+  oficina: 'Oficinas',
+};
+
+/** Monto sin decimales para tarjetas: "S/ 130,000". */
+export function formatearMonto(monto: number, moneda = 'PEN'): string {
+  const valor = Number.isFinite(monto) ? monto : 0;
+  const simbolo = moneda === 'PEN' ? 'S/' : moneda === 'USD' ? 'US$' : moneda;
+  return `${simbolo} ${valor.toLocaleString('es-PE', { maximumFractionDigits: 0 })}`;
+}

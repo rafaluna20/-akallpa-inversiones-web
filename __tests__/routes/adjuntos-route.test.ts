@@ -3,6 +3,7 @@
  */
 import { GET as adjunto } from '@/app/api/adjunto/route';
 import { GET as comprobante } from '@/app/api/comprobante/route';
+import { GET as imagenProyecto } from '@/app/api/proyecto-imagen/route';
 import { llamar } from '@/lib/odoo';
 import { leerToken } from '@/lib/session';
 
@@ -76,3 +77,33 @@ describe('GET /api/adjunto', () => {
     expect((await adjunto(new Request('http://x/api/adjunto?id=5'))).status).toBe(404);
   });
 });
+
+describe('GET /api/proyecto-imagen', () => {
+  test('exige sesión y un id numérico sin llamar a Odoo', async () => {
+    tokenMock.mockReturnValue(undefined);
+    expect((await imagenProyecto(new Request('http://x/api/proyecto-imagen?id=1'))).status).toBe(401);
+    tokenMock.mockReturnValue('JWT');
+    for (const qs of ['', '?id=abc', '?id=-1', '?id=1;drop']) {
+      expect((await imagenProyecto(new Request(`http://x/api/proyecto-imagen${qs}`))).status).toBe(400);
+    }
+    expect(llamarMock).not.toHaveBeenCalled();
+  });
+
+  test('entrega la portada con el token del inversionista y cabeceras seguras', async () => {
+    llamarMock.mockResolvedValue({ success: true, mimetype: 'image/png', datos: Buffer.from('png').toString('base64') } as never);
+    const r = await imagenProyecto(new Request('http://x/api/proyecto-imagen?id=7'));
+    expect(llamarMock).toHaveBeenCalledWith('proyecto/imagen', { id: 7 }, 'JWT');
+    expect(r.headers.get('Content-Type')).toBe('image/png');
+    expect(r.headers.get('X-Content-Type-Options')).toBe('nosniff');
+  });
+
+  test('un proyecto no publicado o sin imagen responde 404; los errores técnicos, 502', async () => {
+    llamarMock.mockResolvedValueOnce({ success: false, error: 'x', code: 'no_encontrado' });
+    expect((await imagenProyecto(new Request('http://x/api/proyecto-imagen?id=7'))).status).toBe(404);
+    llamarMock.mockResolvedValueOnce({ success: false, error: 'detalle interno', code: 'interno' });
+    const r = await imagenProyecto(new Request('http://x/api/proyecto-imagen?id=7'));
+    expect(r.status).toBe(502);
+    expect(JSON.stringify(await r.json())).not.toContain('detalle interno');
+  });
+});
+

@@ -5,11 +5,11 @@ import { Alert } from '@/components/ui/primitives';
 import { obtenerProyectos } from '@/lib/datos';
 import { mensajeDeError } from '@/lib/errores';
 
-export const metadata: Metadata = { title: 'Proyectos' };
+export const metadata: Metadata = { title: 'Oportunidades' };
 
-export default async function ProyectosPage({ searchParams }: { searchParams: { q?: string | string[] } }) {
-  const q = Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q;
+/** Proyectos que están captando aportes ahora. */
+export default async function OportunidadesPage() {
   const r = await obtenerProyectos();
   if (!r.success) return <Alert tipo="error">{mensajeDeError(r)}</Alert>;
-  return <ExploradorProyectos proyectos={r.proyectos} titulo="Todos los proyectos" consultaInicial={(q ?? '').slice(0, 100)} />;
+  return <ExploradorProyectos proyectos={r.proyectos} titulo="Oportunidades" estadoFijo="captando" />;
 }

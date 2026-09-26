@@ -57,6 +57,15 @@ export interface ProyectoResumen {
   porcentaje_recaudado: number;
   fecha_limite: string | null;
   avance_pct: number;
+  tipo: string | null;
+  ubicacion: string | null;
+  ticket_minimo: number | null;
+  /** Estimación del gestor (no una promesa). `null` = no se muestra. */
+  roi_estimado: number | null;
+  comision_gestor: number;
+  /** Solo la cantidad de socios, nunca quiénes son. */
+  socios: number;
+  tiene_imagen: boolean;
   mi_participacion: MiParticipacion | null;
 }
 

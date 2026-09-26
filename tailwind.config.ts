@@ -13,8 +13,8 @@ const config: Config = {
         warning: { DEFAULT: '#ea580c', light: '#f97316', dark: '#c2410c' },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-slab)', 'Georgia', 'serif'],
+        sans: ['var(--font-pt-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-roboto-slab)', 'Georgia', 'serif'],
       },
       borderRadius: { '4xl': '2rem' },
     },

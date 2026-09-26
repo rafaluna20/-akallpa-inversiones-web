@@ -26,7 +26,14 @@ const proyecto: ProyectoResumen = {
   capital_aportado: 40000,
   porcentaje_recaudado: 40,
   fecha_limite: '2026-12-31',
-  avance_pct: 15,
+  avance_pct: 0,
+  tipo: 'casa',
+  ubicacion: 'Miraflores',
+  ticket_minimo: 5000,
+  roi_estimado: null,
+  comision_gestor: 10,
+  socios: 3,
+  tiene_imagen: false,
   mi_participacion: null,
 };
 
@@ -73,24 +80,59 @@ describe('primitivas', () => {
 describe('ProyectoCard', () => {
   test('muestra nombre, estado, capital y enlaza al detalle', () => {
     render(<ProyectoCard proyecto={proyecto} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/proyectos/7');
     expect(screen.getByRole('heading', { name: 'Torre Miraflores' })).toBeInTheDocument();
-    expect(screen.getByText('Captando aportes')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Torre Miraflores' })).toHaveAttribute('href', '/proyectos/7');
+    expect(screen.getByText('● CAPTANDO')).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: /Capital recaudado de Torre Miraflores/ })).toHaveAttribute('aria-valuenow', '40');
-    expect(screen.getByText(/Hasta 31 dic 2026/)).toBeInTheDocument();
-    expect(screen.queryByText(/Tu aporte/)).not.toBeInTheDocument();
+    expect(screen.getByText(/S\/\s?40[\s.,]?000/)).toBeInTheDocument();
+    expect(screen.getByText('Miraflores')).toBeInTheDocument();
+    expect(screen.queryByText('MI APORTE')).not.toBeInTheDocument();
   });
 
-  test('si participa, muestra su aporte', () => {
-    render(<ProyectoCard proyecto={{ ...proyecto, mi_participacion: { aportado: 5000, comprometido: 0, porcentaje: 12.5, estado: 'activa' } }} />);
-    expect(screen.getByText(/Tu aporte/)).toHaveTextContent(/5[\s., ]?000/);
-    expect(screen.getByText(/12\.50%/)).toBeInTheDocument();
+  test('un proyecto captando ofrece "Invertir" hacia el formulario de aporte', () => {
+    render(<ProyectoCard proyecto={proyecto} />);
+    expect(screen.getByRole('link', { name: 'Invertir' })).toHaveAttribute('href', '/proyectos/7/aportar');
   });
 
-  test('un proyecto en ejecución no muestra fecha límite', () => {
-    render(<ProyectoCard proyecto={{ ...proyecto, estado: 'en_ejecucion' }} />);
-    expect(screen.getByText('En ejecución')).toBeInTheDocument();
-    expect(screen.queryByText(/Hasta/)).not.toBeInTheDocument();
+  test('el ROI es una estimación: sin dato muestra un guion y con dato lo marca como aproximado', () => {
+    const { rerender } = render(<ProyectoCard proyecto={proyecto} />);
+    expect(screen.getByText('ROI est.').parentElement?.parentElement).toHaveTextContent('—');
+    rerender(<ProyectoCard proyecto={{ ...proyecto, roi_estimado: 12.5 }} />);
+    expect(screen.getByText('~12.5%')).toBeInTheDocument();
+  });
+
+  test('si participa, lo indica con la insignia y su aporte', () => {
+    render(<ProyectoCard proyecto={{ ...proyecto, ubicacion: null, mi_participacion: { aportado: 5000, comprometido: 0, porcentaje: 12.5, estado: 'activa' } }} />);
+    expect(screen.getByText('MI APORTE')).toBeInTheDocument();
+    expect(screen.getByText(/Tu aporte/)).toHaveTextContent(/5[\s.,]?000/);
+  });
+
+  test('con avance de obra muestra el avance; sin avance y captando, la fecha de cierre; si no, la comisión', () => {
+    const { rerender } = render(<ProyectoCard proyecto={{ ...proyecto, estado: 'en_ejecucion', avance_pct: 35 }} />);
+    expect(screen.getByText('35%')).toBeInTheDocument();
+    expect(screen.getByText('● EN CURSO')).toBeInTheDocument();
+    rerender(<ProyectoCard proyecto={proyecto} />);
+    expect(screen.getByText(/31 dic 2026/)).toBeInTheDocument();
+    rerender(<ProyectoCard proyecto={{ ...proyecto, estado: 'en_ejecucion' }} />);
+    expect(screen.getByText('10%')).toBeInTheDocument();
+  });
+
+  test('un proyecto liquidado no se puede invertir y se marca como finalizado', () => {
+    render(<ProyectoCard proyecto={{ ...proyecto, estado: 'liquidado', porcentaje_recaudado: 100 }} />);
+    expect(screen.getByText('✓ LIQUIDADO')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Invertir' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Finalizado' })).toBeInTheDocument();
+  });
+
+  test('completo (100 %) se muestra como financiado y ya no acepta aportes', () => {
+    render(<ProyectoCard proyecto={{ ...proyecto, porcentaje_recaudado: 100, capital_aportado: 100000 }} />);
+    expect(screen.getByText('⚡ FINANCIADO')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Invertir' })).not.toBeInTheDocument();
+  });
+
+  test('la portada se pide al servidor del portal, nunca a Odoo', () => {
+    render(<ProyectoCard proyecto={{ ...proyecto, tiene_imagen: true }} />);
+    expect(screen.getByRole('img', { name: /Portada de Torre Miraflores/ })).toHaveAttribute('src', '/api/proyecto-imagen?id=7');
   });
 });
 
