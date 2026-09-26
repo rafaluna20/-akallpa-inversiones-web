@@ -1,5 +1,5 @@
 import type { IconType } from 'react-icons';
-import { FaChartLine, FaFileInvoice, FaHome, FaPlus, FaStar, FaWallet } from 'react-icons/fa';
+import { FaChartLine, FaFileInvoice, FaHome, FaMapMarkedAlt, FaPlus, FaStar, FaWallet } from 'react-icons/fa';
 
 export type ColorInsignia = 'green' | 'blue' | 'red' | 'yellow' | 'purple';
 
@@ -30,6 +30,7 @@ export function gruposDeNavegacion({ misProyectos, oportunidades }: ContadoresNa
         { name: 'Dashboard', href: '/', icon: FaHome },
         { name: 'Mis Inversiones', href: '/mis-inversiones', icon: FaChartLine, badge: misProyectos || undefined, badgeColor: 'green' },
         { name: 'Oportunidades', href: '/oportunidades', icon: FaStar, badge: oportunidades || undefined, badgeColor: 'red' },
+        { name: 'Mapa', href: '/mapa', icon: FaMapMarkedAlt },
       ],
     },
     {

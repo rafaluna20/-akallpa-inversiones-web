@@ -17,7 +17,7 @@ jest.mock('next/link', () => ({
 const proyecto: ProyectoDetalle = {
   id: 7, nombre: 'Torre Miraflores', empresa: 'Akallpa S.A.C.', estado: 'captando', moneda: 'PEN', capital_objetivo: 100000,
   capital_aportado: 40000, porcentaje_recaudado: 40, fecha_limite: '2026-12-31', plazo_vencido: false, avance_pct: 0, tipo: 'casa',
-  ubicacion: 'Miraflores', ticket_minimo: 5000, roi_estimado: null, comision_gestor: 10, socios: 3, tiene_imagen: false,
+  ubicacion: 'Miraflores', coordenadas: null, ticket_minimo: 5000, roi_estimado: null, comision_gestor: 10, socios: 3, tiene_imagen: false,
   mi_participacion: null, descripcion: 'Edificio de 6 pisos', capital_minimo: null, avances: [], cierres: [],
 };
 

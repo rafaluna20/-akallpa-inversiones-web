@@ -29,7 +29,7 @@ const proyecto: ProyectoResumen = {
   plazo_vencido: false,
   avance_pct: 0,
   tipo: 'casa',
-  ubicacion: 'Miraflores',
+  ubicacion: 'Miraflores', coordenadas: null,
   ticket_minimo: 5000,
   roi_estimado: null,
   comision_gestor: 10,

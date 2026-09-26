@@ -61,6 +61,8 @@ export interface ProyectoResumen {
   avance_pct: number;
   tipo: string | null;
   ubicacion: string | null;
+  /** Posición para el mapa; `null` si el gestor aún no la cargó. */
+  coordenadas: { lat: number; lng: number } | null;
   ticket_minimo: number | null;
   /** Estimación del gestor (no una promesa). `null` = no se muestra. */
   roi_estimado: number | null;
