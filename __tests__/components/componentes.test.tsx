@@ -26,6 +26,7 @@ const proyecto: ProyectoResumen = {
   capital_aportado: 40000,
   porcentaje_recaudado: 40,
   fecha_limite: '2026-12-31',
+  plazo_vencido: false,
   avance_pct: 0,
   tipo: 'casa',
   ubicacion: 'Miraflores',

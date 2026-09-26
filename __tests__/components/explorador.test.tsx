@@ -14,7 +14,7 @@ jest.mock('next/link', () => ({
 
 const base: ProyectoResumen = {
   id: 1, nombre: 'Casa Miraflores', empresa: 'Akallpa', estado: 'captando', moneda: 'PEN', capital_objetivo: 150000,
-  capital_aportado: 40000, porcentaje_recaudado: 26.7, fecha_limite: '2026-12-01', avance_pct: 0, tipo: 'casa',
+  capital_aportado: 40000, porcentaje_recaudado: 26.7, fecha_limite: '2026-12-01', plazo_vencido: false, avance_pct: 0, tipo: 'casa',
   ubicacion: 'Miraflores', ticket_minimo: null, roi_estimado: null, comision_gestor: 10, socios: 1, tiene_imagen: false,
   mi_participacion: null,
 };

@@ -2,17 +2,18 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { FaBuilding, FaCalendarAlt, FaChartLine, FaLock, FaMapMarkerAlt, FaUsers } from 'react-icons/fa';
 
+import { estadoDeCaptacion } from '@/lib/captacion';
 import { acotarPorcentaje, ETIQUETA_TIPO_PROYECTO, formatearFecha, formatearMonto, formatearPorcentaje } from '@/lib/format';
 import type { ProyectoResumen } from '@/lib/types';
 
 /** Insignia principal del estado, como en Inversiones Pro (EN CURSO / FINANCIADO / LIQUIDADO). */
-export function insigniaDeEstado(p: Pick<ProyectoResumen, 'estado' | 'porcentaje_recaudado'>): { texto: string; clase: string } {
+export function insigniaDeEstado(p: Pick<ProyectoResumen, 'estado' | 'porcentaje_recaudado' | 'plazo_vencido'>): { texto: string; clase: string } {
   if (p.estado === 'liquidado') return { texto: '✓ LIQUIDADO', clase: 'bg-slate-700/90 text-slate-300' };
   if (p.estado === 'liquidando') return { texto: '⏳ LIQUIDANDO', clase: 'bg-amber-500/90 text-white' };
   if (p.estado === 'captando') {
-    return p.porcentaje_recaudado >= 100
-      ? { texto: '⚡ FINANCIADO', clase: 'bg-amber-500/90 text-white' }
-      : { texto: '● CAPTANDO', clase: 'bg-blue-600/90 text-white' };
+    if (p.porcentaje_recaudado >= 100) return { texto: '⚡ FINANCIADO', clase: 'bg-amber-500/90 text-white' };
+    if (p.plazo_vencido) return { texto: '⏳ PLAZO VENCIDO', clase: 'bg-red-600/90 text-white' };
+    return { texto: '● CAPTANDO', clase: 'bg-blue-600/90 text-white' };
   }
   return { texto: '● EN CURSO', clase: 'bg-blue-600/90 text-white' };
 }
@@ -29,7 +30,7 @@ export function ProyectoCard({ proyecto, variant = 'default' }: { proyecto: Proy
   const p = proyecto;
   const pct = Math.round(acotarPorcentaje(p.porcentaje_recaudado));
   const liquidado = p.estado === 'liquidado';
-  const puedeInvertir = p.estado === 'captando' && p.porcentaje_recaudado < 100 && !liquidado;
+  const puedeInvertir = estadoDeCaptacion(p).puedeInvertir;
   const insignia = insigniaDeEstado(p);
   const detalle = `/proyectos/${p.id}`;
   const mia = p.mi_participacion;

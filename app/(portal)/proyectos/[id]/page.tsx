@@ -1,16 +1,30 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { FaArrowLeft, FaBuilding } from 'react-icons/fa';
 
 import { AvanceTimeline } from '@/components/proyectos/AvanceTimeline';
+import { BarraDatos } from '@/components/proyectos/BarraDatos';
 import { CierresLista } from '@/components/proyectos/CierreComponentes';
-import { Alert, Badge, Card, PageTitle, ProgressBar, Stat, tonoDeEstado } from '@/components/ui/primitives';
+import { PanelInversion } from '@/components/proyectos/PanelInversion';
+import { insigniaDeEstado } from '@/components/proyectos/ProyectoCard';
+import { TabsProyecto } from '@/components/proyectos/TabsProyecto';
+import { Alert, EmptyState } from '@/components/ui/primitives';
 import { llamarAutenticado } from '@/lib/auth';
 import { mensajeDeError } from '@/lib/errores';
-import { ETIQUETA_ESTADO_PROYECTO, formatearFecha, formatearMoneda, formatearPorcentaje } from '@/lib/format';
+import { ETIQUETA_ESTADO_PROYECTO, ETIQUETA_TIPO_PROYECTO, formatearFecha, formatearMonto, formatearPorcentaje } from '@/lib/format';
 import type { ProyectoDetalle } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Proyecto' };
+
+function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <div className="rounded-xl border border-white/5 bg-slate-800/50 p-4">
+      <p className="mb-1 text-sm text-gray-400">{etiqueta}</p>
+      <p className="text-lg font-semibold text-white">{valor}</p>
+    </div>
+  );
+}
 
 export default async function ProyectoPage({ params }: { params: { id: string } }) {
   if (!/^\d+$/.test(params.id)) notFound();
@@ -21,56 +35,104 @@ export default async function ProyectoPage({ params }: { params: { id: string } 
   }
   const p = r.proyecto;
   const participa = p.mi_participacion !== null;
+  const insignia = insigniaDeEstado(p);
+
+  const pestanas = [
+    {
+      id: 'descripcion',
+      etiqueta: 'Descripción',
+      contenido: p.descripcion ? (
+        <p className="whitespace-pre-line text-base leading-relaxed text-gray-300">{p.descripcion}</p>
+      ) : (
+        <EmptyState titulo="Akallpa aún no publicó la descripción" descripcion="Cuando esté disponible la verás aquí." />
+      ),
+    },
+    {
+      id: 'avance',
+      etiqueta: 'Avance de obra',
+      insignia: p.avances.length,
+      contenido: <AvanceTimeline avances={p.avances} />,
+    },
+    {
+      id: 'cierres',
+      etiqueta: 'Cierres mensuales',
+      insignia: participa ? p.cierres.length : undefined,
+      contenido: participa ? (
+        <CierresLista proyectoId={p.id} cierres={p.cierres} moneda={p.moneda} />
+      ) : (
+        <Alert tipo="info">El detalle financiero (costos por rubro y facturas) está disponible para quienes participan en el proyecto.</Alert>
+      ),
+    },
+    {
+      id: 'detalles',
+      etiqueta: 'Detalles',
+      contenido: (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Dato etiqueta="Tipo" valor={p.tipo ? ETIQUETA_TIPO_PROYECTO[p.tipo] ?? p.tipo : 'Sin definir'} />
+          <Dato etiqueta="Estado" valor={ETIQUETA_ESTADO_PROYECTO[p.estado] ?? p.estado} />
+          <Dato etiqueta="Empresa" valor={p.empresa} />
+          <Dato etiqueta="Ubicación" valor={p.ubicacion ?? 'Sin definir'} />
+          <Dato etiqueta="Comisión del gestor" valor={formatearPorcentaje(p.comision_gestor, 0)} />
+          <Dato etiqueta="Capital mínimo para iniciar" valor={p.capital_minimo ? formatearMonto(p.capital_minimo, p.moneda) : 'Sin mínimo'} />
+          <Dato etiqueta="Capital objetivo" valor={formatearMonto(p.capital_objetivo, p.moneda)} />
+          <Dato etiqueta="Fecha límite de captación" valor={formatearFecha(p.fecha_limite)} />
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <Link href="/proyectos" prefetch={false} className="text-sm text-slate-400 hover:text-white">← Proyectos</Link>
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-          <PageTitle titulo={p.nombre} subtitulo={p.empresa} />
-          <Badge tono={tonoDeEstado(p.estado)}>{ETIQUETA_ESTADO_PROYECTO[p.estado] ?? p.estado}</Badge>
-        </div>
-      </div>
-
-      <section aria-label="Capital" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat etiqueta="Capital objetivo" valor={formatearMoneda(p.capital_objetivo, p.moneda)} />
-        <Stat etiqueta="Capital aportado" valor={formatearMoneda(p.capital_aportado, p.moneda)} ayuda={formatearPorcentaje(p.porcentaje_recaudado) + ' recaudado'} />
-        <Stat etiqueta="Avance de obra" valor={formatearPorcentaje(p.avance_pct, 0)} />
-        <Stat etiqueta="Fecha límite" valor={formatearFecha(p.fecha_limite)} />
-      </section>
-      <ProgressBar valor={p.porcentaje_recaudado} etiqueta="Capital recaudado del proyecto" />
-
-      {p.mi_participacion && (
-        <Card className="border-emerald-500/20 p-5">
-          <h2 className="mb-1 font-display text-lg font-semibold text-white">Tu participación</h2>
-          <p className="font-mono text-2xl font-bold text-emerald-300">{formatearMoneda(p.mi_participacion.aportado, p.moneda)}</p>
-          <p className="text-sm text-slate-400">{formatearPorcentaje(p.mi_participacion.porcentaje, 2)} del capital aportado</p>
-        </Card>
-      )}
-
-      {p.estado === 'captando' && (
-        <Link
-          href={`/proyectos/${p.id}/aportar`}
-          prefetch={false}
-          className="inline-block rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 font-bold text-white shadow-lg transition-all hover:from-blue-600 hover:to-purple-700"
-        >
-          Aportar a este proyecto
+    <div className="mx-auto max-w-7xl">
+      <nav className="mb-6" aria-label="Migas de pan">
+        <Link href="/proyectos" prefetch={false} className="group inline-flex items-center gap-2 text-blue-400 transition hover:text-blue-300">
+          <FaArrowLeft className="text-lg transition-transform group-hover:-translate-x-1" aria-hidden />
+          <span className="font-medium">Volver a Proyectos</span>
         </Link>
-      )}
+      </nav>
 
-      <section aria-labelledby="avance">
-        <h2 id="avance" className="mb-4 font-display text-xl font-semibold text-white">Avance de obra</h2>
-        <AvanceTimeline avances={p.avances} />
-      </section>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="space-y-8 lg:col-span-2">
+          <section className="space-y-6">
+            <div className="relative h-96 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl">
+              {p.tiene_imagen ? (
+                // eslint-disable-next-line @next/next/no-img-element -- la imagen se sirve por un route handler autenticado
+                <img src={`/api/proyecto-imagen?id=${p.id}`} alt={`Portada de ${p.nombre}`} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-600">
+                  <FaBuilding size={64} aria-hidden />
+                  <span className="text-sm">Sin imagen</span>
+                </div>
+              )}
+              <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                <span className={`inline-flex items-center rounded-full border border-white/10 px-3 py-1 text-xs font-bold shadow backdrop-blur-md ${insignia.clase}`}>{insignia.texto}</span>
+                {p.tipo && (
+                  <span className="rounded-full border border-blue-500/20 bg-slate-900/80 px-3 py-1 text-xs font-bold uppercase text-blue-300 backdrop-blur-sm">
+                    {ETIQUETA_TIPO_PROYECTO[p.tipo] ?? p.tipo}
+                  </span>
+                )}
+              </div>
+            </div>
 
-      <section aria-labelledby="cierres">
-        <h2 id="cierres" className="mb-4 font-display text-xl font-semibold text-white">Cierres mensuales</h2>
-        {participa ? (
-          <CierresLista proyectoId={p.id} cierres={p.cierres} moneda={p.moneda} />
-        ) : (
-          <Alert tipo="info">El detalle financiero (costos por rubro y facturas) está disponible para quienes participan en el proyecto.</Alert>
-        )}
-      </section>
+            <div>
+              <h1 className="mb-3 font-display text-3xl font-bold leading-tight text-white lg:text-5xl">{p.nombre}</h1>
+              <p className="flex items-center gap-2 text-lg text-gray-400">
+                <FaBuilding className="text-xl" aria-hidden />
+                {p.empresa}
+              </p>
+            </div>
+
+            <BarraDatos proyecto={p} />
+          </section>
+
+          <section className="rounded-[20px] border border-[#4b4b4b] bg-[#13161c] p-6 text-gray-100 shadow-md">
+            <TabsProyecto pestanas={pestanas} />
+          </section>
+        </div>
+
+        <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Captación">
+          <PanelInversion proyecto={p} />
+        </aside>
+      </div>
     </div>
   );
 }

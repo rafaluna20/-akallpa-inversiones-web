@@ -56,6 +56,8 @@ export interface ProyectoResumen {
   capital_aportado: number;
   porcentaje_recaudado: number;
   fecha_limite: string | null;
+  /** Lo decide el servidor (hora de Lima). */
+  plazo_vencido: boolean;
   avance_pct: number;
   tipo: string | null;
   ubicacion: string | null;
@@ -88,6 +90,8 @@ export interface Avance {
 }
 
 export interface ProyectoDetalle extends ProyectoResumen {
+  descripcion: string;
+  capital_minimo: number | null;
   avances: Avance[];
   cierres: CierreResumen[];
 }
