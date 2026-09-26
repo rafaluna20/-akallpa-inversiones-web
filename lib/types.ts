@@ -226,3 +226,54 @@ export interface Tablero {
   resultado: { ventas: number; costos: number; margen: number } | null;
   mayores_gastos: { fecha: string; descripcion: string; monto: number }[];
 }
+
+/** Un punto de la evolución mensual del patrimonio (a costo). */
+export interface PuntoPatrimonio {
+  fecha: string;
+  /** Saldo libre + capital en proyectos. */
+  patrimonio: number;
+  /** Lo que la persona puso de su bolsillo hasta esa fecha (depósitos − retiros). */
+  puesto: number;
+}
+
+/** Participación de la persona en un proyecto, con lo que ha puesto y recibido. */
+export interface Contrato {
+  proyecto_id: number;
+  nombre: string;
+  estado: EstadoProyecto | string;
+  tipo: string | null;
+  ubicacion: string | null;
+  en_curso: boolean;
+  /** `false` si el proyecto ya no está publicado: no hay ficha a la que llevar. */
+  visible: boolean;
+  comprometido: number;
+  aportado: number;
+  /** Capital que sigue invertido (a costo). 0 cuando el proyecto ya se liquidó. */
+  capital: number;
+  porcentaje: number;
+  utilidad_recibida: number;
+  /** Liquidado: lo que volvió menos lo aportado (puede ser negativo). En curso: solo la utilidad recibida. */
+  resultado: number;
+  avance_pct: number;
+  /** Estimación del gestor (no una promesa). Nunca se suma a los totales. */
+  roi_estimado: number | null;
+  ganancia_estimada: number | null;
+}
+
+export interface Patrimonio {
+  moneda: string;
+  hoy: string;
+  patrimonio: number;
+  saldo_libre: number;
+  capital_en_curso: number;
+  puesto: number;
+  utilidad_mes: number;
+  utilidad_recibida: number;
+  resultado_realizado: number;
+  proyectos_activos: number;
+  proyectos_historicos: number;
+  evolucion: PuntoPatrimonio[];
+  contratos: Contrato[];
+  /** La persona tiene cuentas en más de una moneda: aquí solo se muestra la principal. */
+  otras_monedas: boolean;
+}
